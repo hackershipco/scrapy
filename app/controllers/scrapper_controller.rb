@@ -10,12 +10,17 @@ class ScrapperController < ApplicationController
       return render json: {:error => "COULDNT FIND THAT MOVIE :( "}.to_json
     end
     if( Movie.exists?(title: @result["Title"]) and Movie.exists?(year: @result["Year"] ))
-      return render json: {:error => "THAT MOVIE IS ALREADY IN THE DB :( "}.to_json
+      @movie = Movie.where("title = ?", @result["Title"]).first
     end
+
     @movie.title = @result["Title"]
     @movie.director = @result["Director"]
     @movie.year = @result["Year"]
     @movie.plot = @result["Plot"]
+
+    oscars = @result["Awards"].match(/(?<number>[\d]+)\s+(o|Oscar)/)
+    @movie.oscars = (( oscars == nil || oscars["number"] == nil) ? 0 : oscars["number"])
+
 
 
     if @movie.save
